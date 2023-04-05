@@ -1,0 +1,32 @@
+---
+format_version: "11"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: other
+workflows:
+  primary:
+    after_run:
+      - bundler
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@8: {}
+  bundler:
+    steps:
+    - script@1:
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -eo pipefail
+
+            echo "Architecture is $(uname -m)"
+            echo "Ruby version is $(ruby --version)"
+            if [[ $(ruby --version) != *$(<.ruby-version)* ]]; then
+              echo "Unexpected ruby version"
+            	exit 1
+            fi
+            gem install bundler --force --no-document
+    - bundler@0: {}
+meta:
+  bitrise.io:
+    stack: osx-xcode-14.2.x-ventura-rosetta
+    machine_type_id: g2-m1.4core
