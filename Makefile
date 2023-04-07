@@ -4,6 +4,9 @@ gem_install_bundler:
 run_bundler:
 	arch -x86_64 zsh -c "bitrise run run_bundler"
 
+run_bundler_with_shim:
+	PATH="./bin/:$$PATH" arch -x86_64 zsh -c "bitrise run run_bundler"
+
 setup:
 	rbenv install $$(<.ruby-version)
 

@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+PARENT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"
+
+find_gem() {
+	local real_gem
+	while IFS=: read -d: -r entry; do
+		found="$(find "$entry" -name gem)"
+		if [[ -n $found ]]; then
+			real_gem="$found"
+			break
+		fi
+	done <<< "$PATH"
+
+	echo $real_gem
+}
+
+caching_gem_path() {
+	local expected="${1}/real_gem"
+	local gem_path=
+	if [[ -f "$expected" ]]; then
+		gem_path=$(<"$expected")
+	else
+		local found=$(find_gem)
+		echo $found > "$expected"
+		gem_path="$found"
+	fi
+	echo $gem_path
+}
+
+is_rosetta() {
+	if [[ $(sysctl -n sysctl.proc_translated) -eq 1 ]]; then
+		echo "y"
+	fi
+}
+
+main() {
+	echo "# Using gem shim!"
+	local real_gem=$(caching_gem_path "$PARENT_DIRECTORY")
+	
+	shift # Chomp script name
+
+	if [[ -n $(is_rosetta) ]]; then
+		echo arch -x86_64 "$real_gem" $@
+	else
+		echo "$real_gem" $@
+	fi
+}
+
+main "$@"
