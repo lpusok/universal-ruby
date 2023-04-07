@@ -43,6 +43,7 @@ workflows:
 
             echo "Architecture is $(uname -m)"
             echo "Ruby version is $(ruby --version)"
+            echo "Path is ${PATH}"
             if [[ $(ruby --version) != *$(<.ruby-version)* ]]; then
               echo "Unexpected ruby version"
             	exit 1
