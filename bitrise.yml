@@ -20,13 +20,6 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -eo pipefail
-
-            echo "Architecture is $(uname -m)"
-            echo "Ruby version is $(ruby --version)"
-            if [[ $(ruby --version) != *$(<.ruby-version)* ]]; then
-              echo "Unexpected ruby version"
-            	exit 1
-            fi
             gem install bundler --force --no-document
   run_bundler:
     before_run:
