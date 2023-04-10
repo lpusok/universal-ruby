@@ -1,3 +1,5 @@
+X86BREW = arch -x86_64 brew
+
 gem_install_bundler:
 	arch -x86_64 zsh -c "bitrise run gem_install_bundler"
 
@@ -12,3 +14,7 @@ setup_x86_64:
 
 clean:
 	.bundle
+
+ruby_install_x86_64:
+	arch -x86_64 zsh -c "brew reinstall readline"
+	RBENV_ROOT="$$(rbenv root)/x86_64" arch -x86_64 rbenv install $$(<.ruby-version)
