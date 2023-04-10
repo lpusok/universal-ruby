@@ -39,6 +39,11 @@ build_libyaml() {
 		exit 1
 	fi
 
+	if [[ -d "${artifacts_prefix}/libyaml" ]]; then
+		echo "libyaml exists; ignoring compilation"
+		return
+	fi
+
 	cd "$expected"
 	./configure --prefix="${artifacts_prefix}/libyaml"
 	make -j4
