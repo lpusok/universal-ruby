@@ -77,6 +77,9 @@ build_ruby() {
 		CFLAGS="-I${artifacts_prefix}/libyaml/include $CFLAGS" \
 		--prefix="${artifacts_prefix}/ruby-${ruby_version}" \
 		--enable-shared
+
+		# --with-arch
+		#   --target=TARGET
 	make
 	make install
 
