@@ -50,9 +50,16 @@ build_libyaml() {
 	make install
 }
 
-build_ruby() {
-	# Maybe just RUBY_CONFIGURE_OPTS & rbenv?
+build_with_rbenv() {
+	local artifacts_prefix="${1:?Missing artifacts prefix}"
+	local ruby_version="${2:?Missing Ruby version}"
 
+	RUBY_CONFIGURE_OPTS="--with-arch=x86_64,arm64 --prefix=${artifacts_prefix}/ruby-${ruby_version} --disable-install-doc --enable-shared" \
+	RUBY_CFLAGS="-Wno-error=implicit-function-declaration" \
+		rbenv install $ruby_version
+}
+
+build_ruby() {
 	local build_dir="${1:?Missing build directory}"
 	local artifacts_prefix="${2:?Missing artifacts prefix}"
 	local ruby_version="${3:?Missing Ruby version}"
