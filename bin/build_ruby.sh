@@ -41,7 +41,7 @@ build_libyaml() {
 
 	cd "$expected"
 	./configure --prefix="${artifacts_prefix}/libyaml"
-	make
+	make -j4
 	make install
 }
 
