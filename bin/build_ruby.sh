@@ -69,7 +69,6 @@ build_ruby() {
 		echo "Missing Ruby source"
 		exit 1
 	fi
-	echo LDFLAGS="${artifacts_prefix}/libyaml/lib"
 
 	cd "$expected"
 	./configure \
@@ -88,7 +87,7 @@ build_ruby() {
 main() {
 	local ruby_version="${1:-3.2.2}"
 
-	local build_dir="${PARENT_DIRECTORY}/../.build"
+	local build_dir="$(cd "${PARENT_DIRECTORY}/../.build"; pwd)"
 	local artifacts_prefix="${build_dir}/artifacts/$(uname -m)"
 	mkdir -p "$build_dir"
 
