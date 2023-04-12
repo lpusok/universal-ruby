@@ -38,22 +38,22 @@ download_files() {
 }
 
 build_libyaml() {
-	local build_dir="${1:?Missing build directory}"
-	local artifacts_prefix="${2:?Missing artifacts prefix}"
+	local src_dir="${1:?Missing build directory}"
+	local lib_dir="${2:?Missing lib prefix}"
 
-	local expected="${build_dir}/yaml-0.2.5"
+	local expected="${src_dir}/yaml-0.2.5"
 	if [[ ! -d "$expected" ]]; then
 		echo "Missing yaml source"
 		exit 1
 	fi
 
-	if [[ -d "${artifacts_prefix}/libyaml" ]]; then
+	if [[ -d "${lib_dir}/libyaml" ]]; then
 		echo "libyaml exists; ignoring compilation"
 		return
 	fi
 
 	cd "$expected"
-	./configure --prefix="${artifacts_prefix}/libyaml"
+	./configure --prefix="${lib_dir}/libyaml" CFLAGS="-arch x86_64 -arch arm64"
 	make -j4
 	make install
 }
