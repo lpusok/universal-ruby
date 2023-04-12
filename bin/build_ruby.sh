@@ -104,7 +104,13 @@ build_openssl() {
 	done
 }
 
+install_psych() {
+	if [[ -z $(gem list --local | grep psych) ]]; then
+		echo "Installing psych gem"
+		gem install psych
+	fi
 }
+
 build_with_rbenv() {
 	local artifacts_prefix="${1:?Missing artifacts prefix}"
 	local ruby_version="${2:?Missing Ruby version}"
