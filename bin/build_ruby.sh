@@ -158,13 +158,18 @@ build_ruby() {
 main() {
 	local ruby_version="${1:-3.2.2}"
 
-	local build_dir="$(cd "${PARENT_DIRECTORY}/../.build"; pwd)"
-	local artifacts_prefix="${build_dir}/artifacts/$(uname -m)"
-	mkdir -p "$build_dir"
+	local repo_dir="$(cd "${PARENT_DIRECTORY}/../"; pwd)"
 
-	download_files "$build_dir" $ruby_version
-	build_libyaml "$build_dir" "$artifacts_prefix"
-	build_openssl "$build_dir" "$artifacts_prefix"
+	mkdir -p "$repo_dir/.build"
+	local build_dir="$(cd "${repo_dir}/.build"; pwd)"
+	local src_dir="${build_dir}/src"
+	local lib_dir="${build_dir}/lib"
+	local artifacts_prefix="${build_dir}/artifacts/"
+	mkdir -p "$build_dir"/{src,lib,artifacts}
+
+	download_files "$src_dir" $ruby_version
+	build_libyaml "$src_dir" "$lib_dir"
+	build_openssl "$src_dir" "$lib_dir"
 	build_ruby "$build_dir" "$artifacts_prefix" $ruby_version
 }
 
