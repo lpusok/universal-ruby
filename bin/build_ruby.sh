@@ -100,9 +100,9 @@ build_ruby() {
 
 	cd "$expected"
 	./configure \
-		LDFLAGS="-L${artifacts_prefix}/libyaml/lib $LDFLAGS" \
-		CFLAGS="-I${artifacts_prefix}/libyaml/include $CFLAGS" \
-		--prefix="${artifacts_prefix}/ruby-${ruby_version}" \
+		--with-openssl-dir="${artifacts_prefix}/openssl" \
+		--with-libyaml-dir="${artifacts_prefix}/libyaml/lib" \
+		--with-destdir="${artifacts_prefix}/ruby-${ruby_version}" \
 		--enable-shared
 
 		# --with-arch
