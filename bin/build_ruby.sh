@@ -6,11 +6,11 @@ PARENT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"
 
 download_files() {
 	# Params
-	local build_dir="${1:?Missing build directory}"
+	local src_dir="${1:?Missing src directory}"
 	local ruby_version="${2:?Missing Ruby version}"
 
 	local ruby_short_version="${ruby_version:0:${#ruby_version}-2}"
-	cd "$build_dir"
+	cd "$src_dir"
 
 	if [[ ! -d "yaml-0.2.5" ]]; then
 		echo "Downloading libyaml"
