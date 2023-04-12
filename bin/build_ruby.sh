@@ -22,7 +22,7 @@ download_files() {
 
 	if [[ ! -d "openssl-3.1.0" ]]; then
 		echo "Downloading OpenSSL"
-		curl "curl https://www.openssl.org/source/openssl-3.1.0.tar.gz" \
+		curl "https://www.openssl.org/source/openssl-3.1.0.tar.gz" \
 			--location \
 			-o openssl.tar.gz
 		tar -xf openssl.tar.gz
