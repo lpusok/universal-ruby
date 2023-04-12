@@ -20,6 +20,14 @@ download_files() {
 		tar -xf libyaml.tar.gz
 	fi
 
+	if [[ ! -d "openssl-3.1.0" ]]; then
+		echo "Downloading OpenSSL"
+		curl "curl https://www.openssl.org/source/openssl-3.1.0.tar.gz" \
+			--location \
+			-o openssl.tar.gz
+		tar -xf openssl.tar.gz
+	fi
+
 	if [[ ! -d "ruby-${ruby_version}" ]]; then
 		echo "Downloading Ruby ${ruby_version}"
 		curl "https://cache.ruby-lang.org/pub/ruby/${ruby_short_version}/ruby-${ruby_version}.tar.gz" \
@@ -50,6 +58,26 @@ build_libyaml() {
 	make install
 }
 
+build_openssl() {
+	local build_dir="${1:?Missing build directory}"
+	local artifacts_prefix="${2:?Missing artifacts prefix}"
+
+	local expected="${build_dir}/openssl-3.1.0"
+	if [[ ! -d "$expected" ]]; then
+		echo "Missing yaml source"
+		exit 1
+	fi
+
+	if [[ -d "${artifacts_prefix}/openssl" ]]; then
+		echo "libyaml exists; ignoring compilation"
+		return
+	fi
+
+	cd "$expected"
+	./configure --prefix="${artifacts_prefix}/openssl"
+	make -j4
+	make install
+}
 build_with_rbenv() {
 	local artifacts_prefix="${1:?Missing artifacts prefix}"
 	local ruby_version="${2:?Missing Ruby version}"
@@ -91,9 +119,9 @@ main() {
 	local artifacts_prefix="${build_dir}/artifacts/$(uname -m)"
 	mkdir -p "$build_dir"
 
-
 	download_files "$build_dir" $ruby_version
-	# build_libyaml "$build_dir" "$artifacts_prefix"
+	build_libyaml "$build_dir" "$artifacts_prefix"
+	build_openssl "$build_dir" "$artifacts_prefix"
 	build_ruby "$build_dir" "$artifacts_prefix" $ruby_version
 }
 
