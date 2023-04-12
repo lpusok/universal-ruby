@@ -146,7 +146,8 @@ build_ruby() {
 		--with-openssl-dir="${artifacts_prefix}/openssl" \
 		--with-libyaml-dir="${artifacts_prefix}/libyaml/lib" \
 		--with-destdir="${artifacts_prefix}/ruby-${ruby_version}" \
-		--enable-shared
+		--enable-shared \
+		--with-arch=arm64,x86_64
 
 		# --with-arch
 		#   --target=TARGET
