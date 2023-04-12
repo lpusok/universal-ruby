@@ -98,6 +98,16 @@ build_ruby() {
 		exit 1
 	fi
 
+	if [[ ! -f "${expected}/libyaml-0.2.dylib" ]]; then
+		# Ruby doesn't recognize the with-libyaml-dir when loading Psych
+		local libyaml="$(find "$artifacts_prefix" -name libyaml-0.2.dylib)"
+		if [[ ! -e "$libyaml" ]]; then
+			echo "Could not find libyaml-0.2.dylib!"
+			exit 1
+		fi
+		ln -s "$libyaml" "${expected}/libyaml-0.2.dylib"
+	fi
+
 	cd "$expected"
 	./configure \
 		--with-openssl-dir="${artifacts_prefix}/openssl" \
