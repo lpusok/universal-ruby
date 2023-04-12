@@ -59,24 +59,51 @@ build_libyaml() {
 }
 
 build_openssl() {
-	local build_dir="${1:?Missing build directory}"
-	local artifacts_prefix="${2:?Missing artifacts prefix}"
+	local src_dir="${1:?Missing src directory}"
+	local lib_dir="${2:?Missing lib prefix}"
 
-	local expected="${build_dir}/openssl-3.1.0"
+	local expected="${src_dir}/openssl-3.1.0"
 	if [[ ! -d "$expected" ]]; then
 		echo "Missing openssl source"
 		exit 1
 	fi
 
-	if [[ -d "${artifacts_prefix}/openssl" ]]; then
+	if [[ -d "${lib_dir}/openssl/universal" ]]; then
 		echo "openssl exists; ignoring compilation"
 		return
 	fi
 
 	cd "$expected"
-	./configure --prefix="${artifacts_prefix}/openssl"
+
+
+	# Multi-arch: https://stackoverflow.com/questions/25530429/build-multiarch-openssl-on-os-x/25531033#25531033
+	# Note: Cleaned up and removed deprecated options/outdated items
+
+	# Native (arm64)
+	make clean
+	./config --prefix="${lib_dir}/openssl/arm64"
 	make -j4
 	make install
+
+	# Intel
+	make clean
+	./configure --prefix="${lib_dir}/openssl/x86_64" darwin64-x86_64-cc
+	make -j4
+	make install
+
+	# Combine
+	local ulib="${lib_dir}/openssl/universal/lib"
+	local armlib="${lib_dir}/openssl/arm64/lib"
+	mkdir -p "${ulib}"/{engines-3,ossl-modules}
+	local binaries="$(find "${armlib}" -name "*.dylib" -o -name "*.a")"
+	for bin in ${binaries[@]}; do
+		local binname="${bin/$armlib/}"
+		binname="${binname#/}"
+		local x86path="${lib_dir}/openssl/x86_64/lib/${binname}"
+		lipo -create "$bin" "$x86path" -output "${ulib}/${binname}"
+	done
+}
+
 }
 build_with_rbenv() {
 	local artifacts_prefix="${1:?Missing artifacts prefix}"
