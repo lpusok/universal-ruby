@@ -64,12 +64,12 @@ build_openssl() {
 
 	local expected="${build_dir}/openssl-3.1.0"
 	if [[ ! -d "$expected" ]]; then
-		echo "Missing yaml source"
+		echo "Missing openssl source"
 		exit 1
 	fi
 
 	if [[ -d "${artifacts_prefix}/openssl" ]]; then
-		echo "libyaml exists; ignoring compilation"
+		echo "openssl exists; ignoring compilation"
 		return
 	fi
 
