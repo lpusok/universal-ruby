@@ -157,6 +157,8 @@ build_ruby() {
 		exit 1
 	fi
 
+	symlink_libyaml "$expected" "$lib_dir"
+
 	local openssl_dir="${lib_dir}/openssl/universal/"
 	local libyaml_dir="${lib_dir}/libyaml/"
 	verify_deps_prior_to_building_ruby "$openssl_dir" "$libyaml_dir"
