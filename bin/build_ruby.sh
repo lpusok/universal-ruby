@@ -160,6 +160,7 @@ build_ruby() {
 		--with-destdir="${lib_dir}/ruby-${ruby_version}" \
 		--enable-shared \
 		--with-arch=arm64,x86_64 \
+		--disable-install-rdoc \
 			| tee _ruby-configure.log
 
 		# --with-arch
