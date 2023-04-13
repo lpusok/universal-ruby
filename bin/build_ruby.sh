@@ -3,6 +3,7 @@
 set -eo pipefail
 
 PARENT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"
+source "${PARENT_DIRECTORY}/util.sh"
 
 download_files() {
 	# Params
@@ -146,16 +147,6 @@ build_ruby() {
 		exit 1
 	fi
 
-	if [[ ! -f "${expected}/libyaml-0.2.dylib" ]]; then
-		# Ruby doesn't recognize the with-libyaml-dir when loading Psych
-		local libyaml="$(find "$lib_dir" -name libyaml-0.2.dylib)"
-		if [[ ! -e "$libyaml" ]]; then
-			echo "Could not find libyaml-0.2.dylib in $lib_dir!"
-			exit 1
-		fi
-		ln -s "$libyaml" "${expected}/libyaml-0.2.dylib"
-	fi
-
 	local openssl_dir="${lib_dir}/openssl/universal/"
 	local libyaml_dir="${lib_dir}/libyaml/"
 	for lib in "$openssl_dir" "$libyaml_dir"; do
@@ -164,6 +155,7 @@ build_ruby() {
 			exit 1
 		fi
 	done
+	symlink_libyaml "$expected" "$lib_dir"
 
 	cd "$expected"
 	make clean
