@@ -167,8 +167,8 @@ build_ruby() {
 
 	cd "$expected"
 	./configure \
-		--with-openssl-dir="${lib_dir}/openssl/universal/lib" \
-		--with-libyaml-dir="${lib_dir}/libyaml/lib" \
+		--with-openssl-dir="${openssl_dir}" \
+		--with-libyaml-dir="${libyaml_dir}" \
 		--with-destdir="${lib_dir}/ruby-${ruby_version}" \
 		--enable-shared \
 		--with-arch=arm64,x86_64 \
