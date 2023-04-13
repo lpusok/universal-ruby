@@ -170,7 +170,6 @@ build_ruby() {
 
 	make | tee _ruby-make.log
 	make install | tee _ruby-make-install.log
-
 }
 
 main() {
