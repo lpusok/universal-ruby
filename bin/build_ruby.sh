@@ -163,8 +163,6 @@ build_ruby() {
 		--disable-install-rdoc \
 			| tee _ruby-configure.log
 
-		# --with-arch
-		#   --target=TARGET
 	make | tee _ruby-make.log
 	make install | tee _ruby-make-install.log
 
