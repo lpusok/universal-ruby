@@ -37,6 +37,18 @@ download_files() {
 	fi
 }
 
+fix_mkconfig() {
+	# File taken from: https://github.com/ruby/ruby/blob/master/tool/mkconfig.rb
+	# There's a bug in the regex for determining the `arch` from the flags.
+	# Specifically the \z constraint causes the substring lookup to fail and
+	# result in nil.  The latest version allows for the `cpu` backup from the
+	# platform.
+	local origin_dir="${1:?Missing origin directory}"
+	local ruby_src_dir="${2:?Missing Ruby source directory}"
+
+	cp "${origin_dir}/mkconfig.rb" "${ruby_src_dir}/tool/mkconfig.rb"
+}
+
 build_libyaml() {
 	local src_dir="${1:?Missing build directory}"
 	local lib_dir="${2:?Missing lib prefix}"
@@ -172,6 +184,8 @@ main() {
 	build_libyaml "$src_dir" "$lib_dir"
 	build_openssl "$src_dir" "$lib_dir"
 	build_ruby "$build_dir" "$artifacts_prefix" $ruby_version
+
+	fix_mkconfig "$PARENT_DIRECTORY" "${src_dir}/ruby-${ruby_version}"
 }
 
 main "$@"
