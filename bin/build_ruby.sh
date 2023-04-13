@@ -159,12 +159,13 @@ build_ruby() {
 		--with-libyaml-dir="${lib_dir}/libyaml/lib" \
 		--with-destdir="${lib_dir}/ruby-${ruby_version}" \
 		--enable-shared \
-		--with-arch=arm64,x86_64
+		--with-arch=arm64,x86_64 \
+			| tee _ruby-configure.log
 
 		# --with-arch
 		#   --target=TARGET
-	make
-	make install
+	make | tee _ruby-make.log
+	make install | tee _ruby-make-install.log
 
 }
 
