@@ -114,6 +114,9 @@ build_openssl() {
 		local x86path="${lib_dir}/openssl/x86_64/lib/${binname}"
 		lipo -create "$bin" "$x86path" -output "${ulib}/${binname}"
 	done
+
+	cd "$(dirname "$armlib")"
+	cp -r {bin,include,share,ssl} "${lib_dir}/openssl/universal/"
 }
 
 install_psych() {
