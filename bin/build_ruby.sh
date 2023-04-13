@@ -133,11 +133,11 @@ build_with_rbenv() {
 }
 
 build_ruby() {
-	local build_dir="${1:?Missing build directory}"
-	local artifacts_prefix="${2:?Missing artifacts prefix}"
+	local src_dir="${1:?Missing src directory}"
+	local lib_dir="${2:?Missing lib prefix}"
 	local ruby_version="${3:?Missing Ruby version}"
 
-	local expected="${build_dir}/ruby-${ruby_version}"
+	local expected="${src_dir}/ruby-${ruby_version}"
 	if [[ ! -d "$expected" ]]; then
 		echo "Missing Ruby source"
 		exit 1
@@ -145,9 +145,9 @@ build_ruby() {
 
 	if [[ ! -f "${expected}/libyaml-0.2.dylib" ]]; then
 		# Ruby doesn't recognize the with-libyaml-dir when loading Psych
-		local libyaml="$(find "$artifacts_prefix" -name libyaml-0.2.dylib)"
+		local libyaml="$(find "$lib_dir" -name libyaml-0.2.dylib)"
 		if [[ ! -e "$libyaml" ]]; then
-			echo "Could not find libyaml-0.2.dylib!"
+			echo "Could not find libyaml-0.2.dylib in $lib_dir!"
 			exit 1
 		fi
 		ln -s "$libyaml" "${expected}/libyaml-0.2.dylib"
@@ -155,9 +155,9 @@ build_ruby() {
 
 	cd "$expected"
 	./configure \
-		--with-openssl-dir="${artifacts_prefix}/openssl" \
-		--with-libyaml-dir="${artifacts_prefix}/libyaml/lib" \
-		--with-destdir="${artifacts_prefix}/ruby-${ruby_version}" \
+		--with-openssl-dir="${lib_dir}/openssl/universal/lib" \
+		--with-libyaml-dir="${lib_dir}/libyaml/lib" \
+		--with-destdir="${lib_dir}/ruby-${ruby_version}" \
 		--enable-shared \
 		--with-arch=arm64,x86_64
 
@@ -177,15 +177,14 @@ main() {
 	local build_dir="$(cd "${repo_dir}/.build"; pwd)"
 	local src_dir="${build_dir}/src"
 	local lib_dir="${build_dir}/lib"
-	local artifacts_prefix="${build_dir}/artifacts/"
 	mkdir -p "$build_dir"/{src,lib,artifacts}
 
 	download_files "$src_dir" $ruby_version
 	build_libyaml "$src_dir" "$lib_dir"
 	build_openssl "$src_dir" "$lib_dir"
-	build_ruby "$build_dir" "$artifacts_prefix" $ruby_version
 
 	fix_mkconfig "$PARENT_DIRECTORY" "${src_dir}/ruby-${ruby_version}"
+	build_ruby "$src_dir" "$lib_dir" $ruby_version
 }
 
 main "$@"
