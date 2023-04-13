@@ -127,6 +127,16 @@ install_psych() {
 	fi
 }
 
+verify_deps_prior_to_building_ruby() {
+	while [[ $# -gt 0 ]]; do
+		if [[ ! -d "$1" ]]; then
+			echo "Missing library folder: $1"
+			exit 1
+		fi
+		shift
+	done
+}
+
 build_with_rbenv() {
 	local artifacts_prefix="${1:?Missing artifacts prefix}"
 	local ruby_version="${2:?Missing Ruby version}"
@@ -149,13 +159,7 @@ build_ruby() {
 
 	local openssl_dir="${lib_dir}/openssl/universal/"
 	local libyaml_dir="${lib_dir}/libyaml/"
-	for lib in "$openssl_dir" "$libyaml_dir"; do
-		if [[ ! -d "$lib" ]]; then
-			echo "Missing library folder: $lib"
-			exit 1
-		fi
-	done
-	symlink_libyaml "$expected" "$lib_dir"
+	verify_deps_prior_to_building_ruby "$openssl_dir" "$libyaml_dir"
 
 	cd "$expected"
 	make clean
