@@ -166,6 +166,7 @@ build_ruby() {
 	done
 
 	cd "$expected"
+	make clean
 	./configure \
 		--with-openssl-dir="${openssl_dir}" \
 		--with-libyaml-dir="${libyaml_dir}" \
