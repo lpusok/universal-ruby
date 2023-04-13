@@ -156,6 +156,15 @@ build_ruby() {
 		ln -s "$libyaml" "${expected}/libyaml-0.2.dylib"
 	fi
 
+	local openssl_dir="${lib_dir}/openssl/universal/"
+	local libyaml_dir="${lib_dir}/libyaml/"
+	for lib in "$openssl_dir" "$libyaml_dir"; do
+		if [[ ! -d "$lib" ]]; then
+			echo "Missing library folder: $lib"
+			exit 1
+		fi
+	done
+
 	cd "$expected"
 	./configure \
 		--with-openssl-dir="${lib_dir}/openssl/universal/lib" \
