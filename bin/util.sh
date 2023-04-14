@@ -12,3 +12,15 @@ symlink_libyaml() {
 		ln -s "$libyaml" "${ruby_src_dir}/libyaml-0.2.dylib"
 	fi
 }
+
+fix_mkconfig() {
+	# File taken from: https://github.com/ruby/ruby/blob/master/tool/mkconfig.rb
+	# There's a bug in the regex for determining the `arch` from the flags.
+	# Specifically the \z constraint causes the substring lookup to fail and
+	# result in nil.  The latest version allows for the `cpu` backup from the
+	# platform.
+	local origin_dir="${1:?Missing origin directory}"
+	local ruby_src_dir="${2:?Missing Ruby source directory}"
+
+	cp "${origin_dir}/mkconfig.rb" "${ruby_src_dir}/tool/mkconfig.rb"
+}
