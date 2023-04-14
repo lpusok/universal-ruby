@@ -19,6 +19,9 @@ ruby_install_x86_64:
 	arch -x86_64 zsh -c "brew reinstall readline"
 	RBENV_ROOT="$$(rbenv root)/x86_64" arch -x86_64 rbenv install $$(<.ruby-version)
 
+run_bundler_with_shim:
+	PATH="$(shell pwd)/bin/shims:$$PATH" arch -x86_64 zsh -c "bitrise run run_bundler"
+
 clean_gems:
 	mv Gemfile _Gemfile
 	bundle clean --force
