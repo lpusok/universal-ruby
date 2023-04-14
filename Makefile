@@ -18,3 +18,8 @@ clean:
 ruby_install_x86_64:
 	arch -x86_64 zsh -c "brew reinstall readline"
 	RBENV_ROOT="$$(rbenv root)/x86_64" arch -x86_64 rbenv install $$(<.ruby-version)
+
+clean_gems:
+	mv Gemfile _Gemfile
+	bundle clean --force
+	mv _Gemfile Gemfile
