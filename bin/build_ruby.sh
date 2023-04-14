@@ -180,11 +180,15 @@ verify_deps_prior_to_building_ruby() {
 }
 
 build_with_rbenv() {
-	local artifacts_prefix="${1:?Missing artifacts prefix}"
+	local lib_dir="${1:?Missing lib prefix}"
 	local ruby_version="${2:?Missing Ruby version}"
 
-	RUBY_CONFIGURE_OPTS="--with-arch=x86_64,arm64 --prefix=${artifacts_prefix}/ruby-${ruby_version} --disable-install-doc --enable-shared" \
-	RUBY_CFLAGS="-Wno-error=implicit-function-declaration" \
+	local openssl_dir="${lib_dir}/openssl/universal"
+	local libyaml_dir="${lib_dir}/libyaml"
+	local readline_dir="${lib_dir}/readline/universal"
+	verify_deps_prior_to_building_ruby "$openssl_dir" "$libyaml_dir" "$readline_dir"
+
+	RUBY_CONFIGURE_OPTS="--with-openssl-dir=\"${openssl_dir}\" --with-libyaml-dir=\"${libyaml_dir}\" --with-readline-dir=\"${readline_dir}\" --enable-shared --with-arch=arm64,x86_64 --disable-install-rdoc" \
 		rbenv install $ruby_version
 }
 
@@ -237,7 +241,8 @@ main() {
 	build_openssl "$src_dir" "$lib_dir"
 
 	fix_mkconfig "$PARENT_DIRECTORY" "${src_dir}/ruby-${ruby_version}"
-	build_ruby "$src_dir" "$lib_dir" $ruby_version
+	# build_ruby "$src_dir" "$lib_dir" $ruby_version
+	build_with_rbenv "$lib_dir" $ruby_version
 }
 
 main "$@"
