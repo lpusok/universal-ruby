@@ -4,7 +4,7 @@ symlink_libyaml() {
 
 	if [[ ! -f "${ruby_src_dir}/libyaml-0.2.dylib" ]]; then
 		# Ruby doesn't recognize the with-libyaml-dir when loading Psych
-		local libyaml="$(find "$search_path" -name libyaml-0.2.dylib)"
+		local libyaml="$(find "$search_path" -name libyaml-0.2.dylib | head -n1)"
 		if [[ ! -e "$libyaml" ]]; then
 			echo "Could not find libyaml-0.2.dylib in $lib_dir!"
 			exit 1
