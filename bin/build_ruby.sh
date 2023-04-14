@@ -160,6 +160,7 @@ build_openssl() {
 
 	cd "$(dirname "$armlib")"
 	cp -r {bin,include,share,ssl} "${lib_dir}/openssl/universal/"
+	cp -r "lib/pkgconfig" "${ulib}"
 }
 
 install_psych() {
