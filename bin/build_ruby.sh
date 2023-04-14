@@ -29,6 +29,14 @@ download_files() {
 		tar -xf openssl.tar.gz
 	fi
 
+	if [[ ! -d "readline-8.2" ]]; then
+		echo "Downloading readline"
+		curl "https://ftp.gnu.org/gnu/readline/readline-8.2.tar.gz" \
+			--location \
+			-o readline.tar.gz
+		tar -xf readline.tar.gz
+	fi
+
 	if [[ ! -d "ruby-${ruby_version}" ]]; then
 		echo "Downloading Ruby ${ruby_version}"
 		curl "https://cache.ruby-lang.org/pub/ruby/${ruby_short_version}/ruby-${ruby_version}.tar.gz" \
@@ -57,6 +65,52 @@ build_libyaml() {
 	./configure --prefix="${lib_dir}/libyaml" CFLAGS="-arch x86_64 -arch arm64"
 	make -j4
 	make install
+}
+
+build_readline() {
+	local src_dir="${1:?Missing build directory}"
+	local lib_dir="${2:?Missing lib prefix}"
+
+	local expected="${src_dir}/readline-8.2"
+	if [[ ! -d "$expected" ]]; then
+		echo "Missing readline source"
+		exit 1
+	fi
+
+	if [[ -d "${lib_dir}/readline/universal" ]]; then
+		echo "readline exists; ignoring compilation"
+		return
+	fi
+
+	cd "$expected"
+
+	# Build arm
+	make clean
+	./configure --prefix="${lib_dir}/readline/arm64"
+	make -j4
+	make install
+
+	# Build x86_64
+	# I couldn't figure out the magical incantations for configure to build
+	# an x86_64 binary, but just running it under Rosetta seemed to work.
+	make clean
+	arch -x86_64 bash -c "./configure --prefix=\"${lib_dir}/readline/x86_64\" && make -j4"
+	make install
+
+	local ulib="${lib_dir}/readline/universal/lib"
+	mkdir -p "${ulib}"
+	cp -r "${lib_dir}/readline/arm64/lib/pkgconfig" "${ulib}/"
+
+	local armlib="${lib_dir}/readline/arm64/lib"
+	local binaries="$(find "${armlib}" -name "*.dylib" -o -name "*.a")"
+	for bin in ${binaries[@]}; do
+		local binname="${bin/$armlib/}"
+		binname="${binname#/}"
+		local x86path="${lib_dir}/readline/x86_64/lib/${binname}"
+		lipo -create "$bin" "$x86path" -output "${ulib}/${binname}"
+	done
+
+	cp -r "${lib_dir}"/readline/arm64/{bin,include,share} "${lib_dir}/readline/universal"
 }
 
 build_openssl() {
@@ -179,6 +233,7 @@ main() {
 
 	download_files "$src_dir" $ruby_version
 	build_libyaml "$src_dir" "$lib_dir"
+	build_readline "$src_dir" "$lib_dir"
 	build_openssl "$src_dir" "$lib_dir"
 
 	fix_mkconfig "$PARENT_DIRECTORY" "${src_dir}/ruby-${ruby_version}"
