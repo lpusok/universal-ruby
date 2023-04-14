@@ -3,6 +3,7 @@
 set -eo pipefail
 
 PARENT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"
+source "${PARENT_DIRECTORY}/util.sh"
 
 download_files() {
 	# Params
@@ -28,6 +29,14 @@ download_files() {
 		tar -xf openssl.tar.gz
 	fi
 
+	if [[ ! -d "readline-8.2" ]]; then
+		echo "Downloading readline"
+		curl "https://ftp.gnu.org/gnu/readline/readline-8.2.tar.gz" \
+			--location \
+			-o readline.tar.gz
+		tar -xf readline.tar.gz
+	fi
+
 	if [[ ! -d "ruby-${ruby_version}" ]]; then
 		echo "Downloading Ruby ${ruby_version}"
 		curl "https://cache.ruby-lang.org/pub/ruby/${ruby_short_version}/ruby-${ruby_version}.tar.gz" \
@@ -35,18 +44,6 @@ download_files() {
 			-o "ruby.tar.gz"
 		tar -xf ruby.tar.gz
 	fi
-}
-
-fix_mkconfig() {
-	# File taken from: https://github.com/ruby/ruby/blob/master/tool/mkconfig.rb
-	# There's a bug in the regex for determining the `arch` from the flags.
-	# Specifically the \z constraint causes the substring lookup to fail and
-	# result in nil.  The latest version allows for the `cpu` backup from the
-	# platform.
-	local origin_dir="${1:?Missing origin directory}"
-	local ruby_src_dir="${2:?Missing Ruby source directory}"
-
-	cp "${origin_dir}/mkconfig.rb" "${ruby_src_dir}/tool/mkconfig.rb"
 }
 
 build_libyaml() {
@@ -68,6 +65,52 @@ build_libyaml() {
 	./configure --prefix="${lib_dir}/libyaml" CFLAGS="-arch x86_64 -arch arm64"
 	make -j4
 	make install
+}
+
+build_readline() {
+	local src_dir="${1:?Missing build directory}"
+	local lib_dir="${2:?Missing lib prefix}"
+
+	local expected="${src_dir}/readline-8.2"
+	if [[ ! -d "$expected" ]]; then
+		echo "Missing readline source"
+		exit 1
+	fi
+
+	if [[ -d "${lib_dir}/readline/universal" ]]; then
+		echo "readline exists; ignoring compilation"
+		return
+	fi
+
+	cd "$expected"
+
+	# Build arm
+	make clean
+	./configure --prefix="${lib_dir}/readline/arm64"
+	make -j4
+	make install
+
+	# Build x86_64
+	# I couldn't figure out the magical incantations for configure to build
+	# an x86_64 binary, but just running it under Rosetta seemed to work.
+	make clean
+	arch -x86_64 bash -c "./configure --prefix=\"${lib_dir}/readline/x86_64\" && make -j4"
+	make install
+
+	local ulib="${lib_dir}/readline/universal/lib"
+	mkdir -p "${ulib}"
+	cp -r "${lib_dir}/readline/arm64/lib/pkgconfig" "${ulib}/"
+
+	local armlib="${lib_dir}/readline/arm64/lib"
+	local binaries="$(find "${armlib}" -name "*.dylib" -o -name "*.a")"
+	for bin in ${binaries[@]}; do
+		local binname="${bin/$armlib/}"
+		binname="${binname#/}"
+		local x86path="${lib_dir}/readline/x86_64/lib/${binname}"
+		lipo -create "$bin" "$x86path" -output "${ulib}/${binname}"
+	done
+
+	cp -r "${lib_dir}"/readline/arm64/{bin,include,share} "${lib_dir}/readline/universal"
 }
 
 build_openssl() {
@@ -117,6 +160,7 @@ build_openssl() {
 
 	cd "$(dirname "$armlib")"
 	cp -r {bin,include,share,ssl} "${lib_dir}/openssl/universal/"
+	cp -r "lib/pkgconfig" "${ulib}"
 }
 
 install_psych() {
@@ -126,12 +170,27 @@ install_psych() {
 	fi
 }
 
+verify_deps_prior_to_building_ruby() {
+	while [[ $# -gt 0 ]]; do
+		if [[ ! -d "$1" ]]; then
+			echo "Missing library folder: $1"
+			exit 1
+		fi
+		shift
+	done
+}
+
 build_with_rbenv() {
-	local artifacts_prefix="${1:?Missing artifacts prefix}"
+	local lib_dir="${1:?Missing lib prefix}"
 	local ruby_version="${2:?Missing Ruby version}"
 
-	RUBY_CONFIGURE_OPTS="--with-arch=x86_64,arm64 --prefix=${artifacts_prefix}/ruby-${ruby_version} --disable-install-doc --enable-shared" \
-	RUBY_CFLAGS="-Wno-error=implicit-function-declaration" \
+	local openssl_dir="${lib_dir}/openssl/universal"
+	local libyaml_dir="${lib_dir}/libyaml"
+	local readline_dir="${lib_dir}/readline/universal"
+	verify_deps_prior_to_building_ruby "$openssl_dir" "$libyaml_dir" "$readline_dir"
+
+	RUBY_CONFIGURE_OPTS="--with-openssl-dir=${openssl_dir} --with-libyaml-dir=${libyaml_dir} --with-readline-dir=${readline_dir} --enable-shared --with-arch=arm64,x86_64 --disable-install-rdoc" \
+	MAKE="${PARENT_DIRECTORY}/make-shim.sh" \
 		rbenv install $ruby_version
 }
 
@@ -146,24 +205,11 @@ build_ruby() {
 		exit 1
 	fi
 
-	if [[ ! -f "${expected}/libyaml-0.2.dylib" ]]; then
-		# Ruby doesn't recognize the with-libyaml-dir when loading Psych
-		local libyaml="$(find "$lib_dir" -name libyaml-0.2.dylib)"
-		if [[ ! -e "$libyaml" ]]; then
-			echo "Could not find libyaml-0.2.dylib in $lib_dir!"
-			exit 1
-		fi
-		ln -s "$libyaml" "${expected}/libyaml-0.2.dylib"
-	fi
+	symlink_libyaml "$expected" "$lib_dir"
 
 	local openssl_dir="${lib_dir}/openssl/universal/"
 	local libyaml_dir="${lib_dir}/libyaml/"
-	for lib in "$openssl_dir" "$libyaml_dir"; do
-		if [[ ! -d "$lib" ]]; then
-			echo "Missing library folder: $lib"
-			exit 1
-		fi
-	done
+	verify_deps_prior_to_building_ruby "$openssl_dir" "$libyaml_dir"
 
 	cd "$expected"
 	make clean
@@ -178,7 +224,6 @@ build_ruby() {
 
 	make | tee _ruby-make.log
 	make install | tee _ruby-make-install.log
-
 }
 
 main() {
@@ -194,10 +239,12 @@ main() {
 
 	download_files "$src_dir" $ruby_version
 	build_libyaml "$src_dir" "$lib_dir"
+	build_readline "$src_dir" "$lib_dir"
 	build_openssl "$src_dir" "$lib_dir"
 
 	fix_mkconfig "$PARENT_DIRECTORY" "${src_dir}/ruby-${ruby_version}"
-	build_ruby "$src_dir" "$lib_dir" $ruby_version
+	# build_ruby "$src_dir" "$lib_dir" $ruby_version
+	build_with_rbenv "$lib_dir" $ruby_version
 }
 
 main "$@"
