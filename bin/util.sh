@@ -24,3 +24,36 @@ fix_mkconfig() {
 
 	cp "${origin_dir}/mkconfig.rb" "${ruby_src_dir}/tool/mkconfig.rb"
 }
+
+find_real() {
+	local real
+	while IFS=: read -d: -r entry; do
+		found="$(find "$entry" -name $1)"
+		if [[ -n $found ]]; then
+			real="$found"
+			break
+		fi
+	done <<< "$PATH"
+
+	echo $real
+}
+
+caching_real_path() {
+	local basename=$(basename "$1")
+	local expected="${2}/real_${basename}"
+	local real_path=
+	if [[ -f "$expected" ]]; then
+		real_path=$(<"$expected")
+	else
+		local found=$(find_real "$basename")
+		echo $found > "$expected"
+		real_path="$found"
+	fi
+	echo $real_path
+}
+
+is_rosetta() {
+	if [[ $(sysctl -n sysctl.proc_translated) -eq 1 ]]; then
+		echo "y"
+	fi
+}
