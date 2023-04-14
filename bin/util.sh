@@ -26,10 +26,13 @@ fix_mkconfig() {
 }
 
 find_real() {
+	local basename="${1:?Failed to provide basename}"
+	local shim_parent_dir="${2:?Failed to provide shim parent directory}"
+
 	local real
 	while IFS=: read -d: -r entry; do
 		found="$(find "$entry" -name $1)"
-		if [[ -n $found ]]; then
+		if [[ -n $found && "$found" != $shim_parent_dir* ]]; then
 			real="$found"
 			break
 		fi
@@ -45,7 +48,7 @@ caching_real_path() {
 	if [[ -f "$expected" ]]; then
 		real_path=$(<"$expected")
 	else
-		local found=$(find_real "$basename")
+		local found=$(find_real "$basename" "$2")
 		echo $found > "$expected"
 		real_path="$found"
 	fi
