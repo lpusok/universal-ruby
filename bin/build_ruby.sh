@@ -190,6 +190,7 @@ build_with_rbenv() {
 	verify_deps_prior_to_building_ruby "$openssl_dir" "$libyaml_dir" "$readline_dir"
 
 	RUBY_CONFIGURE_OPTS="--with-openssl-dir=\"${openssl_dir}\" --with-libyaml-dir=\"${libyaml_dir}\" --with-readline-dir=\"${readline_dir}\" --enable-shared --with-arch=arm64,x86_64 --disable-install-rdoc" \
+	MAKE="${PARENT_DIRECTORY}/make-shim.sh" \
 		rbenv install $ruby_version
 }
 
