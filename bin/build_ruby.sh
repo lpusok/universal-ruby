@@ -211,6 +211,8 @@ build_ruby() {
 	local libyaml_dir="${lib_dir}/libyaml/"
 	verify_deps_prior_to_building_ruby "$openssl_dir" "$libyaml_dir"
 
+	copy_replacements "$PARENT_DIRECTORY/" "${src_dir}/ruby-${ruby_version}/"
+
 	cd "$expected"
 	make clean
 	./configure \
@@ -242,7 +244,6 @@ main() {
 	build_readline "$src_dir" "$lib_dir"
 	build_openssl "$src_dir" "$lib_dir"
 
-	fix_mkconfig "$PARENT_DIRECTORY" "${src_dir}/ruby-${ruby_version}"
 	# build_ruby "$src_dir" "$lib_dir" $ruby_version
 	build_with_rbenv "$lib_dir" $ruby_version
 }

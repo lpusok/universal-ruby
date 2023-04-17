@@ -13,16 +13,22 @@ symlink_libyaml() {
 	fi
 }
 
-fix_mkconfig() {
+copy_replacements() {
+	# tool/mkconfig.rb
 	# File taken from: https://github.com/ruby/ruby/blob/master/tool/mkconfig.rb
 	# There's a bug in the regex for determining the `arch` from the flags.
 	# Specifically the \z constraint causes the substring lookup to fail and
 	# result in nil.  The latest version allows for the `cpu` backup from the
 	# platform.
+
+	# compile.c
+	# There appears to be an issue with the RUBY_PLATFORM variable being checked
+	# in Rosetta builds.  This comments out the code that causes this check.
+
 	local origin_dir="${1:?Missing origin directory}"
 	local ruby_src_dir="${2:?Missing Ruby source directory}"
 
-	cp "${origin_dir}/mkconfig.rb" "${ruby_src_dir}/tool/mkconfig.rb"
+	rsync -a "$origin_dir" "$ruby_src_dir"
 }
 
 find_real() {
