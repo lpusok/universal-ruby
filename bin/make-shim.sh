@@ -7,7 +7,7 @@ main() {
 	# symlink_libyaml "." "$(dirname "$PARENT_DIRECTORY")"
 	if [[ -f ruby.c ]]; then
 		# Only run in Ruby root directory
-		fix_mkconfig "$PARENT_DIRECTORY" "."
+		copy_replacements "${PARENT_DIRECTORY}/replacements/ruby/3.2.2/" "./"
 	fi
 	make "$@"
 }
