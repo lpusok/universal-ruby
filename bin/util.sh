@@ -20,6 +20,11 @@ copy_replacements() {
 	# Specifically the \z constraint causes the substring lookup to fail and
 	# result in nil.  The latest version allows for the `cpu` backup from the
 	# platform.
+
+	# compile.c
+	# There appears to be an issue with the RUBY_PLATFORM variable being checked
+	# in Rosetta builds.  This comments out the code that causes this check.
+
 	local origin_dir="${1:?Missing origin directory}"
 	local ruby_src_dir="${2:?Missing Ruby source directory}"
 
