@@ -24,5 +24,8 @@ run_bundler_with_shim:
 
 clean_gems:
 	mv Gemfile _Gemfile
+	rm Gemfile.lock || true
+	echo "source 'https://rubygems.org'" > Gemfile
 	bundle clean --force
+	rm Gemfile
 	mv _Gemfile Gemfile
