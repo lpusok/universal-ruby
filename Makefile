@@ -1,5 +1,8 @@
 X86BREW = arch -x86_64 brew
 
+build_universal_ruby:
+	./bin/build_ruby.sh
+
 gem_install_bundler:
 	arch -x86_64 zsh -c "bitrise run gem_install_bundler"
 
