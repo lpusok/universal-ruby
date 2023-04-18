@@ -85,7 +85,7 @@ build_readline() {
 	cd "$expected"
 
 	# Build arm
-	make clean
+	make clean || true
 	./configure --prefix="${lib_dir}/readline/arm64"
 	make -j4
 	make install
@@ -93,7 +93,7 @@ build_readline() {
 	# Build x86_64
 	# I couldn't figure out the magical incantations for configure to build
 	# an x86_64 binary, but just running it under Rosetta seemed to work.
-	make clean
+	make clean || true
 	arch -x86_64 bash -c "./configure --prefix=\"${lib_dir}/readline/x86_64\" && make -j4"
 	make install
 
@@ -135,13 +135,13 @@ build_openssl() {
 	# Note: Cleaned up and removed deprecated options/outdated items
 
 	# Native (arm64)
-	make clean
+	make clean || true
 	./config --prefix="${lib_dir}/openssl/arm64"
 	make -j4
 	make install
 
 	# Intel
-	make clean
+	make clean || true
 	./configure --prefix="${lib_dir}/openssl/x86_64" darwin64-x86_64-cc
 	make -j4
 	make install
