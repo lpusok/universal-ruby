@@ -163,13 +163,6 @@ build_openssl() {
 	cp -r "lib/pkgconfig" "${ulib}"
 }
 
-install_psych() {
-	if [[ -z $(gem list --local | grep psych) ]]; then
-		echo "Installing psych gem"
-		gem install psych
-	fi
-}
-
 verify_deps_prior_to_building_ruby() {
 	while [[ $# -gt 0 ]]; do
 		if [[ ! -d "$1" ]]; then
