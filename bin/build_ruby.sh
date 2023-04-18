@@ -2,6 +2,8 @@
 
 set -eo pipefail
 
+NUM_CORES=$(sysctl -n hw.ncpu)
+
 PARENT_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd)"
 source "${PARENT_DIRECTORY}/util.sh"
 
@@ -63,7 +65,7 @@ build_libyaml() {
 
 	cd "$expected"
 	./configure --prefix="${lib_dir}/libyaml" CFLAGS="-arch x86_64 -arch arm64"
-	make -j4
+	make -j${NUM_CORES}
 	make install
 }
 
@@ -87,14 +89,14 @@ build_readline() {
 	# Build arm
 	make clean || true
 	./configure --prefix="${lib_dir}/readline/arm64"
-	make -j4
+	make -j${NUM_CORES}
 	make install
 
 	# Build x86_64
 	# I couldn't figure out the magical incantations for configure to build
 	# an x86_64 binary, but just running it under Rosetta seemed to work.
 	make clean || true
-	arch -x86_64 bash -c "./configure --prefix=\"${lib_dir}/readline/x86_64\" && make -j4"
+	arch -x86_64 bash -c "./configure --prefix=\"${lib_dir}/readline/x86_64\" && make -j${NUM_CORES}"
 	make install
 
 	local ulib="${lib_dir}/readline/universal/lib"
@@ -137,13 +139,13 @@ build_openssl() {
 	# Native (arm64)
 	make clean || true
 	./config --prefix="${lib_dir}/openssl/arm64"
-	make -j4
+	make -j${NUM_CORES}
 	make install
 
 	# Intel
 	make clean || true
 	./configure --prefix="${lib_dir}/openssl/x86_64" darwin64-x86_64-cc
-	make -j4
+	make -j${NUM_CORES}
 	make install
 
 	# Combine
@@ -161,13 +163,6 @@ build_openssl() {
 	cd "$(dirname "$armlib")"
 	cp -r {bin,include,share,ssl} "${lib_dir}/openssl/universal/"
 	cp -r "lib/pkgconfig" "${ulib}"
-}
-
-install_psych() {
-	if [[ -z $(gem list --local | grep psych) ]]; then
-		echo "Installing psych gem"
-		gem install psych
-	fi
 }
 
 verify_deps_prior_to_building_ruby() {
