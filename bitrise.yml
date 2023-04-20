@@ -9,6 +9,7 @@ workflows:
         inputs:
         - content: |-
             #!/usr/bin/env bash
+            ls
             make
   primary:
     after_run:
