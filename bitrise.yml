@@ -13,6 +13,10 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             make
+
+            VERSION=3.2.2
+            zip $VERSION.zip ~/.rbenv/versions/$VERSION
+            mv $VERSION.zip BITRISE_DEPLOY_DIR
   primary:
     after_run:
       - gem_install_bundler
