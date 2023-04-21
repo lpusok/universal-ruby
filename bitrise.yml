@@ -16,7 +16,7 @@ workflows:
 
             VERSION=3.2.2
             zip $VERSION.zip ~/.rbenv/versions/$VERSION
-            mv $VERSION.zip BITRISE_DEPLOY_DIR
+            mv $VERSION.zip $BITRISE_DEPLOY_DIR
     - deploy-to-bitrise-io@2: {}
   primary:
     after_run:
