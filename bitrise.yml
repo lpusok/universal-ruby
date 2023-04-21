@@ -55,3 +55,7 @@ workflows:
               echo "Unexpected ruby version"
             	exit 1
             fi
+meta:
+  bitrise.io:
+    stack: osx-xcode-14.3.x-ventura
+    machine_type_id: g2-m1-max.10core
