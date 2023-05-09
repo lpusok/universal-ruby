@@ -1,4 +1,3 @@
----
 format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: other
@@ -18,6 +17,10 @@ workflows:
             zip $VERSION.zip ~/.rbenv/versions/$VERSION
             mv $VERSION.zip $BITRISE_DEPLOY_DIR
     - deploy-to-bitrise-io@2: {}
+    meta:
+      bitrise.io:
+        stack: osx-xcode-14.2.x-ventura-rosetta
+        machine_type_id: g2-m1-max.10core
   make_ruby:
     steps:
     - activate-ssh-key@4:
@@ -35,15 +38,15 @@ workflows:
     - deploy-to-bitrise-io@2: {}
   primary:
     after_run:
-      - gem_install_bundler
-      - run_bundler
+    - gem_install_bundler
+    - run_bundler
     steps:
     - activate-ssh-key@4:
         run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
     - git-clone@8: {}
   gem_install_bundler:
     before_run:
-      - verify_environment
+    - verify_environment
     steps:
     - script@1:
         inputs:
@@ -53,24 +56,14 @@ workflows:
             gem install bundler --force --no-document
   run_bundler:
     before_run:
-      - verify_environment
+    - verify_environment
     steps:
     - bundler@0: {}
   verify_environment:
     steps:
-     - script@1:
+    - script@1:
         inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -eo pipefail
-
-            echo "Architecture is $(uname -m)"
-            echo "Ruby version is $(ruby --version)"
-            echo "Path is ${PATH}"
-            if [[ $(ruby --version) != *$(<.ruby-version)* ]]; then
-              echo "Unexpected ruby version"
-            	exit 1
-            fi
+        - content: "#!/usr/bin/env bash\nset -eo pipefail\n\necho \"Architecture is $(uname -m)\"\necho \"Ruby version is $(ruby --version)\"\necho \"Path is ${PATH}\"\nif [[ $(ruby --version) != *$(<.ruby-version)* ]]; then\n  echo \"Unexpected ruby version\"\n\texit 1\nfi"
 meta:
   bitrise.io:
     stack: osx-xcode-14.3.x-ventura
