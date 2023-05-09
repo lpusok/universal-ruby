@@ -13,7 +13,7 @@ workflows:
             #!/usr/bin/env bash
             set -euxo pipefail
 
-            VERSION=3.1.3
+            VERSION=3.2.2
             rm -rf ~/.rbenv/versions/$VERSION
             rbenv install $VERSION
             zip -r $BITRISE_DEPLOY_DIR/$VERSION.zip ~/.rbenv/versions/$VERSION
