@@ -15,6 +15,7 @@ workflows:
 
             VERSION=3.2.2
             brew uninstall --ignore-dependencies libyaml readline gmp readline
+            brew install libyaml
             rm -rf ~/.rbenv/versions/$VERSION
             
             rbenv install $VERSION --verbose --disable-install-rdoc
