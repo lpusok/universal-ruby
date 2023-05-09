@@ -17,8 +17,7 @@ workflows:
             brew uninstall --ignore-dependencies libyaml readline gmp readline
             rm -rf ~/.rbenv/versions/$VERSION
             
-            RUBY_CONFIGURE_OPTS="--disable-install-rdoc"
-            rbenv install $VERSION --verbose
+            rbenv install $VERSION --verbose --disable-install-rdoc
             zip -r $BITRISE_DEPLOY_DIR/$VERSION.zip ~/.rbenv/versions/$VERSION
     - deploy-to-bitrise-io@2: {}
     meta:
