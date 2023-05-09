@@ -14,7 +14,7 @@ workflows:
             set -euxo pipefail
 
             VERSION=3.2.2
-            brew uninstall readline gmp readline
+            brew uninstall --ignore-dependencies readline gmp readline
             rm -rf ~/.rbenv/versions/$VERSION
             rbenv install $VERSION
             zip -r $BITRISE_DEPLOY_DIR/$VERSION.zip ~/.rbenv/versions/$VERSION
