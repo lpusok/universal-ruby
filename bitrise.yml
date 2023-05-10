@@ -14,11 +14,23 @@ workflows:
             set -euxo pipefail
 
             VERSION=3.2.2
-            brew uninstall --ignore-dependencies readline gmp readline
+            #brew uninstall --ignore-dependencies readline gmp readline
+
+            arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+            (echo; echo 'eval "$(/usr/local/bin/brew shellenv)"') >> /Users/vagrant/.zprofile
+            eval "$(/usr/local/bin/brew shellenv)"
+            echo '# Set PATH, MANPATH, etc., for Homebrew.' >> /Users/vagrant/.zprofile
+            echo 'export HOMEBREW_CORE_GIT_REMOTE="/Users/vagrant/mirrors/github.com/bitrise-io/homebrew-core"' >> /Users/vagrant/.zprofile
+            export HOMEBREW_CORE_GIT_REMOTE="/Users/vagrant/mirrors/github.com/bitrise-io/homebrew-core"
+
+            brew install readline gmp readline libyaml rbenv
             
             rm -rf ~/.rbenv/versions/$VERSION
             
+            export RUBY_CONFIGURE_OPTS="--disable-install-rdoc" 
+            #"--with-openssl-dir=/opt/homebrew/opt/openssl@3 --disable-shared"
             rbenv install $VERSION --verbose
+            
             zip -r $BITRISE_DEPLOY_DIR/$VERSION.zip ~/.rbenv/versions/$VERSION
     - deploy-to-bitrise-io@2: {}
     meta:
