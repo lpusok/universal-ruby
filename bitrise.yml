@@ -27,7 +27,7 @@ workflows:
             
             rm -rf ~/.rbenv/versions/$VERSION
             
-            export RUBY_CONFIGURE_OPTS="with-arch=x86_64 --disable-install-rdoc" 
+            export RUBY_CONFIGURE_OPTS="--with-arch=x86_64 --disable-install-rdoc" 
             #"--with-openssl-dir=/opt/homebrew/opt/openssl@3 --disable-shared"
             rbenv install $VERSION --verbose
             
